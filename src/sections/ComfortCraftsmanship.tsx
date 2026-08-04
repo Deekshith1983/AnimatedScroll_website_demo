@@ -10,25 +10,34 @@ export const ComfortCraftsmanship: React.FC = () => {
   const foregroundCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!containerRef.current || !foregroundCardRef.current) return;
+    const container = containerRef.current;
+    const foregroundCard = foregroundCardRef.current;
+    if (!container || !foregroundCard) return;
+
+    // Detect mobile/tablet screen sizes to skip card shift parallax
+    const isMobile = window.matchMedia('(max-width: 1024px)').matches;
+    if (isMobile) {
+      gsap.set(foregroundCard, { y: 0 });
+      return;
+    }
 
     const ctx = gsap.context(() => {
       // Foreground card moves faster (Parallax scroll effect)
       gsap.fromTo(
-        foregroundCardRef.current,
+        foregroundCard,
         { y: 80 },
         {
           y: -80,
           ease: 'none',
           scrollTrigger: {
-            trigger: containerRef.current,
+            trigger: container,
             start: 'top bottom',
             end: 'bottom top',
             scrub: true,
           },
         }
       );
-    }, containerRef);
+    }, container);
 
     return () => ctx.revert();
   }, []);

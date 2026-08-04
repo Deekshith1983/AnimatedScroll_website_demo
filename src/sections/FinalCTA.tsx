@@ -20,23 +20,31 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onVisitClick, onContactClick
     const content = contentRef.current;
     if (!section || !bgImage || !content) return;
 
+    // Detect mobile/tablet screen sizes to skip heavy scroll-bound parallax
+    const isMobile = window.matchMedia('(max-width: 1024px)').matches;
+
     const ctx = gsap.context(() => {
-      // Slow background zoom on scroll-in
-      gsap.fromTo(
-        bgImage,
-        { scale: 1.05, yPercent: -5 },
-        {
-          scale: 1.15,
-          yPercent: 5,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: section,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: true,
-          },
-        }
-      );
+      if (!isMobile) {
+        // Slow background zoom on scroll-in
+        gsap.fromTo(
+          bgImage,
+          { scale: 1.05, yPercent: -5 },
+          {
+            scale: 1.15,
+            yPercent: 5,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: true,
+            },
+          }
+        );
+      } else {
+        // Set static padding scale on mobile so image covers frame correctly
+        gsap.set(bgImage, { scale: 1.08, yPercent: 0 });
+      }
 
       // Text reveal on viewport entry
       gsap.fromTo(

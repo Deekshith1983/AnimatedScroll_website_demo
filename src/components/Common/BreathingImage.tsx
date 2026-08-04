@@ -26,13 +26,20 @@ export const BreathingImage: React.FC<BreathingImageProps> = ({
   const imageRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    if (!containerRef.current || !imageRef.current) return;
+    const container = containerRef.current;
+    const image = imageRef.current;
+    if (!container || !image) return;
 
-    // Only apply GSAP scroll triggers on non-touch screens or general viewports
-    // to preserve smoothness, as requested in optimization guidelines
+    // Detect mobile/tablet screen sizes to skip heavy scroll-bound parallax
+    const isMobile = window.matchMedia('(max-width: 1024px)').matches;
+    if (isMobile) {
+      gsap.set(image, { scale: 1.05, yPercent: 0 });
+      return;
+    }
+
     const ctx = gsap.context(() => {
       gsap.fromTo(
-        imageRef.current,
+        image,
         {
           yPercent: -parallaxSpeed,
           scale: 1.1, // starts slightly scaled up for parallax padding
@@ -41,14 +48,14 @@ export const BreathingImage: React.FC<BreathingImageProps> = ({
           yPercent: parallaxSpeed,
           ease: 'none',
           scrollTrigger: {
-            trigger: containerRef.current,
+            trigger: container,
             start: 'top bottom',
             end: 'bottom top',
             scrub: true,
           },
         }
       );
-    }, containerRef);
+    }, container);
 
     return () => ctx.revert();
   }, [parallaxSpeed]);

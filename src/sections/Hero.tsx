@@ -20,40 +20,47 @@ export const Hero: React.FC<HeroProps> = ({ onExploreClick, onVisitClick }) => {
     const bgImage = bgImageRef.current;
     const content = contentRef.current;
     const scrollIndicator = scrollIndicatorRef.current;
+    // Detect mobile/tablet screen sizes to skip heavy scroll-bound parallax
+    const isMobile = window.matchMedia('(max-width: 1024px)').matches;
     if (!hero || !bgImage || !content) return;
 
     const ctx = gsap.context(() => {
-      // 1. Slow background scale from 1 to 1.08 driven by scroll
-      gsap.fromTo(
-        bgImage,
-        { scale: 1 },
-        {
-          scale: 1.08,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: hero,
-            start: 'top top',
-            end: 'bottom top',
-            scrub: true,
-          },
-        }
-      );
+      if (!isMobile) {
+        // 1. Slow background scale from 1 to 1.08 driven by scroll
+        gsap.fromTo(
+          bgImage,
+          { scale: 1 },
+          {
+            scale: 1.08,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: hero,
+              start: 'top top',
+              end: 'bottom top',
+              scrub: true,
+            },
+          }
+        );
 
-      // 2. Slow parallax y-offset on the background image
-      gsap.fromTo(
-        bgImage,
-        { yPercent: 0 },
-        {
-          yPercent: 12,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: hero,
-            start: 'top top',
-            end: 'bottom top',
-            scrub: true,
-          },
-        }
-      );
+        // 2. Slow parallax y-offset on the background image
+        gsap.fromTo(
+          bgImage,
+          { yPercent: 0 },
+          {
+            yPercent: 12,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: hero,
+              start: 'top top',
+              end: 'bottom top',
+              scrub: true,
+            },
+          }
+        );
+      } else {
+        // Set static padding scale on mobile so image covers frame correctly
+        gsap.set(bgImage, { scale: 1.05, yPercent: 0 });
+      }
 
       // 3. Staggered reveal of text and buttons inside content
       const elements = content.children;
