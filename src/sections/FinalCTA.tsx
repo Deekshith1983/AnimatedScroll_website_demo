@@ -1,126 +1,43 @@
-import React, { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import React from 'react';
+import SplitText from '../components/Common/SplitText';
 
-gsap.registerPlugin(ScrollTrigger);
-
-interface FinalCTAProps {
-  onVisitClick: () => void;
-  onContactClick: () => void;
-}
-
-export const FinalCTA: React.FC<FinalCTAProps> = ({ onVisitClick, onContactClick }) => {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const bgImageRef = useRef<HTMLImageElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const section = sectionRef.current;
-    const bgImage = bgImageRef.current;
-    const content = contentRef.current;
-    if (!section || !bgImage || !content) return;
-
-    // Detect mobile/tablet screen sizes to skip heavy scroll-bound parallax
-    const isMobile = window.matchMedia('(max-width: 1024px)').matches;
-
-    const ctx = gsap.context(() => {
-      if (!isMobile) {
-        // Slow background zoom on scroll-in
-        gsap.fromTo(
-          bgImage,
-          { scale: 1.05, yPercent: -5 },
-          {
-            scale: 1.15,
-            yPercent: 5,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: section,
-              start: 'top bottom',
-              end: 'bottom top',
-              scrub: true,
-            },
-          }
-        );
-      } else {
-        // Set static padding scale on mobile so image covers frame correctly
-        gsap.set(bgImage, { scale: 1.08, yPercent: 0 });
-      }
-
-      // Text reveal on viewport entry
-      gsap.fromTo(
-        content.children,
-        { opacity: 0, y: 35 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 1.2,
-          stagger: 0.2,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: content,
-            start: 'top 85%',
-          },
-        }
-      );
-    }, section);
-
-    return () => ctx.revert();
-  }, []);
-
+export const FinalCTA: React.FC = () => {
   return (
-    <section
-      ref={sectionRef}
-      className="relative w-full h-[80vh] min-h-[500px] flex flex-col justify-center items-center px-6 md:px-16 overflow-hidden bg-charcoal"
-    >
-      {/* Background Image Container */}
-      <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
-        {/* Dark Cinematic Overlay */}
-        <div className="absolute inset-0 bg-black/75 z-10 pointer-events-none" />
+    <div className="scene-container scene-11 absolute inset-0 w-full h-full opacity-0 pointer-events-none z-10 flex flex-col justify-end pb-24 md:pb-32 px-6 md:px-16 overflow-hidden">
+      {/* Background Image Layer */}
+      <div className="absolute inset-0 w-full h-full z-0">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-black/35 to-black/60 z-10" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_40%,#0a0a0a_100%)] z-10 opacity-70 scene-vignette" />
         
-        {/* Reusing hero image for narrative closure */}
         <img
-          ref={bgImageRef}
           src="/assets/2.png"
-          alt="Luxury Bathroom Design Concept"
-          className="w-full h-[120%] object-cover absolute top-[-10%] left-0 origin-center will-change-transform opacity-50"
-          loading="lazy"
+          alt="Best Hero Showroom Environment"
+          className="w-full h-full object-cover origin-center scale-108 filter brightness-50 scene-img will-change-transform"
         />
       </div>
 
+      {/* Lighting Animation Layer */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(197,168,128,0.07)_0%,transparent_50%)] z-20 pointer-events-none opacity-0 scene-light" />
+
       {/* Foreground Content */}
-      <div
-        ref={contentRef}
-        className="max-w-3xl w-full mx-auto text-center relative z-20 flex flex-col items-center space-y-6 md:space-y-8"
-      >
-        <span className="text-[10px] md:text-xs tracking-[0.3em] text-[#c5a880] uppercase font-sans font-light">
-          10 / Curated Solace
+      <div className="max-w-4xl w-full mx-auto relative z-30 text-center flex flex-col items-center space-y-6">
+        <span className="text-[10px] md:text-xs tracking-[0.3em] text-[#c5a880] uppercase font-sans font-light scene-tag">
+          Scene 11 — Experience
         </span>
         
-        <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-light text-white tracking-wide uppercase leading-tight gold-glow">
-          Every Detail <br /> Shapes The Experience.
+        <h2 className="text-4xl sm:text-6xl font-serif font-light text-white tracking-wide uppercase leading-tight">
+          <SplitText text="More than products. More than interiors." mode="chars" />
         </h2>
         
-        <p className="text-xs sm:text-sm md:text-base text-[#a1a1aa] font-sans font-light leading-relaxed max-w-xl">
-          Discover curated collections crafted to transform everyday spaces into timeless expressions of luxury.
+        <p className="text-xs sm:text-sm md:text-base text-[#a1a1aa] font-sans font-light leading-relaxed max-w-2xl scene-desc opacity-0">
+          We create environments that inspire every day—spaces where design, comfort, and craftsmanship exist in perfect harmony. Welcome to a new standard of luxury living.
         </p>
 
-        {/* Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 md:gap-6 pt-4 w-full justify-center">
-          <button
-            onClick={onVisitClick}
-            className="px-8 py-3.5 bg-ivory text-charcoal text-[11px] tracking-luxury uppercase hover:bg-[#c5a880] hover:text-charcoal transition-all duration-500 font-sans font-medium"
-          >
-            Visit Showroom
-          </button>
-          <button
-            onClick={onContactClick}
-            className="px-8 py-3.5 border border-ivory/30 text-ivory text-[11px] tracking-luxury uppercase hover:border-[#c5a880] hover:text-[#c5a880] transition-all duration-500 font-sans font-medium"
-          >
-            Contact Us
-          </button>
-        </div>
+        <span className="text-[10px] tracking-luxury text-[#c5a880] uppercase font-sans font-light pt-2 select-none scene-desc opacity-0">
+          The complete journey.
+        </span>
       </div>
-    </section>
+    </div>
   );
 };
 

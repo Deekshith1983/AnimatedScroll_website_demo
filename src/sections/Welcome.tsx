@@ -1,97 +1,92 @@
 import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import BreathingImage from '../components/Common/BreathingImage';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export const Welcome: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const headingRef = useRef<HTMLHeadingElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const container = containerRef.current;
-    const heading = headingRef.current;
-    const content = contentRef.current;
-    if (!container || !heading || !content) return;
+    const text = textRef.current;
+    const image = imageRef.current;
+    if (!text || !image) return;
 
-    const ctx = gsap.context(() => {
-      // Heading slide and fade reveal
-      gsap.fromTo(
-        heading,
-        { y: 40, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1.2,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: heading,
-            start: 'top 85%',
-          },
-        }
-      );
+    // Simple, lightweight fade-up reveal on scroll without pinning or scrubbing
+    const revealTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: 'top 80%',
+        toggleActions: 'play none none none',
+      },
+    });
 
-      // Paragraph slide and fade reveal
-      gsap.fromTo(
-        content.querySelectorAll('.reveal-text'),
+    revealTl
+      .fromTo(
+        text.querySelectorAll('.reveal-el'),
         { y: 30, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1,
-          stagger: 0.15,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: content,
-            start: 'top 85%',
-          },
-        }
+        { y: 0, opacity: 1, stagger: 0.12, duration: 0.8, ease: 'power2.out' }
+      )
+      .fromTo(
+        image,
+        { scale: 1.05, opacity: 0 },
+        { scale: 1.0, opacity: 1, duration: 1.0, ease: 'power2.out' },
+        '-=0.6'
       );
-    }, container);
-
-    return () => ctx.revert();
   }, []);
 
   return (
     <section
-      id="about"
       ref={containerRef}
-      className="relative bg-charcoal text-ivory py-24 md:py-36 px-6 md:px-16 overflow-hidden border-t border-[#c5a880]/10"
+      id="about"
+      className="py-32 md:py-48 px-6 md:px-16 w-full max-w-[1440px] mx-auto bg-ivory text-espresso select-none"
     >
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16 items-center">
-        {/* Left Column: Premium Parallax Image */}
-        <div className="w-full aspect-[4/5] md:aspect-[3/2] lg:aspect-[4/5] max-h-[650px] relative overflow-hidden border border-[#c5a880]/20 shadow-2xl">
-          <BreathingImage
-            src="/assets/1.png"
-            alt="Om Mangalam Curated Showroom Entry"
-            parallaxSpeed={12}
-          />
-        </div>
-
-        {/* Right Column: Editorial Copy */}
-        <div ref={contentRef} className="flex flex-col space-y-6 md:space-y-8 max-w-xl">
-          <span className="text-[10px] md:text-xs tracking-[0.25em] text-[#c5a880] uppercase font-sans font-light reveal-text">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+        {/* Left Column: Editorial Description */}
+        <div ref={textRef} className="lg:col-span-6 flex flex-col space-y-6 md:space-y-8">
+          <span className="reveal-el text-[10px] md:text-xs tracking-luxury text-bronze uppercase font-sans font-light">
             01 / Introduction
           </span>
           
-          <h2
-            ref={headingRef}
-            className="text-3xl md:text-5xl font-serif font-light text-white tracking-wide leading-tight uppercase"
-          >
+          <h2 className="reveal-el text-4xl sm:text-5xl md:text-6xl font-serif font-light text-espresso tracking-tight leading-[1.08] uppercase">
             Welcome to <br /> Om Mangalam
           </h2>
           
-          <p className="text-sm md:text-base text-[#a1a1aa] font-sans font-light leading-relaxed reveal-text">
+          <p className="reveal-el text-base sm:text-lg md:text-[19px] text-warmGrey font-sans font-light leading-relaxed max-w-[620px]">
             Every exceptional bathroom begins with a vision. At Om Mangalam, we curate premium collections and immersive showroom environments that help homeowners, architects, interior designers, and builders transform ideas into beautifully crafted spaces.
           </p>
-          
-          <div className="w-16 h-[1px] bg-[#c5a880]/40 reveal-text" />
-          
-          <p className="text-xs md:text-sm text-[#a1a1aa]/80 italic font-serif font-light reveal-text leading-relaxed">
+
+          <div className="reveal-el w-16 h-[1px] bg-bronze/40" />
+
+          <p className="reveal-el text-xs md:text-sm text-warmGrey/80 italic font-serif font-light leading-relaxed max-w-[620px]">
             "Design is not just what it looks like. Design is how it functions, how it flows, and how it translates into a space of timeless solace."
           </p>
+
+          <div className="reveal-el pt-4">
+            <a
+              href="#contact"
+              className="inline-block px-9 py-4 border border-bronze text-bronze text-[11px] tracking-luxury uppercase rounded-full hover:bg-bronze hover:text-white transition-all duration-500 font-sans font-medium"
+            >
+              Learn More
+            </a>
+          </div>
+        </div>
+
+        {/* Right Column: Architectural Offset Image */}
+        <div className="lg:col-span-6 flex justify-center">
+          <div
+            ref={imageRef}
+            className="w-full max-w-[550px] aspect-[4/5] luxury-image-frame overflow-hidden opacity-0 will-change-transform"
+          >
+            <img
+              src="/assets/8.jpg"
+              alt="Luxury Bathroom Walkthrough Gallery"
+              className="w-full h-full object-cover filter brightness-[0.98] hover:scale-103 transition-transform duration-700"
+              loading="lazy"
+            />
+          </div>
         </div>
       </div>
     </section>

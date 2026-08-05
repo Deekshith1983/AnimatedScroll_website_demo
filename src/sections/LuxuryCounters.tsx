@@ -6,7 +6,6 @@ interface StatCounterProps {
   end: number;
 }
 
-// Reusable stat counter component that mounts and runs when in view
 const StatCounter: React.FC<StatCounterProps> = ({ end }) => {
   const countRef = useRef<HTMLSpanElement>(null);
   
@@ -14,7 +13,7 @@ const StatCounter: React.FC<StatCounterProps> = ({ end }) => {
     ref: countRef as any,
     start: 0,
     end: end,
-    duration: 2.5,
+    duration: 2.2,
     useEasing: true,
   });
 
@@ -31,58 +30,58 @@ export const LuxuryCounters: React.FC = () => {
     {
       end: 25,
       suffix: '+',
-      title: 'Premium Brands',
-      desc: "Partnered with the world's leading designers of luxury bath fittings.",
+      title: 'Global Brands',
+      desc: "Partnered with the world's leading manufacturers of luxury bathroom systems.",
     },
     {
       end: 500,
       suffix: '+',
       title: 'Curated Products',
-      desc: 'Selected for superior design integrity, engineering, and luxury feel.',
+      desc: 'Selected for structural integrity, minimal lines, and luxury material feel.',
     },
     {
       end: 1000,
       suffix: '+',
-      title: 'Satisfied Clients',
-      desc: 'Helping builders, architects, and homeowners bring visions to life.',
+      title: 'Luxury Spaces',
+      desc: 'Helping architects, designers, and homeowners turn concepts into reality.',
     },
     {
       isInfinity: true,
       suffix: '',
-      title: 'Design Possibilities',
-      desc: 'Infinite custom textures, combinations, and architectural finishes.',
+      title: 'Design Options',
+      desc: 'Infinite custom metal finishes, organic stone trims, and layouts.',
     },
   ];
 
   return (
     <section
       ref={ref}
-      className="relative bg-[#0d0d0d] text-ivory py-28 md:py-36 px-6 md:px-16 overflow-hidden border-t border-[#c5a880]/10"
+      className="relative bg-sand text-espresso py-28 md:py-36 px-6 md:px-16 overflow-hidden border-t border-luxuryBorder select-none"
     >
-      <div className="max-w-7xl mx-auto flex flex-col space-y-16 md:space-y-24">
-        {/* Intro Meta */}
+      <div className="max-w-[1440px] mx-auto flex flex-col space-y-16 md:space-y-24">
+        {/* Title Block */}
         <div className="flex flex-col space-y-4 max-w-xl">
-          <span className="text-[10px] md:text-xs tracking-[0.25em] text-[#c5a880] uppercase font-sans font-light">
-            09 / By the numbers
+          <span className="text-[10px] md:text-xs tracking-luxury text-bronze uppercase font-sans font-light">
+            04 / Metrics
           </span>
-          <h2 className="text-3xl md:text-4xl font-serif font-light text-white uppercase tracking-wide">
-            Defining Luxury Standards
+          <h2 className="text-3xl md:text-4xl font-serif font-light text-espresso uppercase tracking-tight">
+            Curating Spaces with Confidence.
           </h2>
         </div>
 
         {/* Counter Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 md:gap-8">
           {stats.map((stat) => (
             <div
               key={stat.title}
-              className="flex flex-col space-y-4 border-l border-[#c5a880]/15 pl-6 md:pl-8 py-2 hover:border-[#c5a880] transition-colors duration-500"
+              className="flex flex-col space-y-4 border-l border-luxuryBorder pl-6 md:pl-8 py-2 hover:border-bronze transition-colors duration-500"
             >
               {/* Animated Stat Value */}
-              <div className="text-5xl md:text-6xl font-serif font-light text-white tracking-tight flex items-baseline">
+              <div className="text-5xl md:text-6xl font-serif font-light text-espresso tracking-tight flex items-baseline">
                 {stat.isInfinity ? (
-                  <span className="text-[#c5a880]">∞</span>
+                  <span className="text-bronze">∞</span>
                 ) : (
-                  <span className="text-[#c5a880] font-light">
+                  <span className="text-bronze font-light">
                     {inView ? (
                       <StatCounter end={stat.end || 0} />
                     ) : (
@@ -90,18 +89,18 @@ export const LuxuryCounters: React.FC = () => {
                     )}
                   </span>
                 )}
-                <span className="text-xl md:text-2xl text-accent font-sans font-light ml-0.5">
+                <span className="text-xl md:text-2xl text-bronze font-sans font-light ml-0.5">
                   {stat.suffix}
                 </span>
               </div>
 
               {/* Title & Description */}
               <div className="flex flex-col space-y-2">
-                <h3 className="text-sm tracking-luxury uppercase font-sans text-white font-medium">
+                <h3 className="text-sm tracking-luxury uppercase font-sans text-espresso font-medium">
                   {stat.title}
                 </h3>
-                <p className="text-xs md:text-sm text-[#a1a1aa] font-sans font-light leading-relaxed">
-                  {stat.desc}
+                <p className="text-xs md:text-sm text-warmGrey font-sans font-light leading-relaxed">
+                  {catDescOverride(stat.desc)}
                 </p>
               </div>
             </div>
@@ -111,5 +110,10 @@ export const LuxuryCounters: React.FC = () => {
     </section>
   );
 };
+
+// Helper for type compatibility check
+function catDescOverride(desc: string): string {
+  return desc;
+}
 
 export default LuxuryCounters;

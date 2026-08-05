@@ -5,16 +5,16 @@
 @layer base {
   html {
     scroll-behavior: auto; /* Managed by Lenis */
-    background-color: #0a0a0a;
-    color: #ffffff;
+    background-color: #F8F5EF;
+    color: #2E241C;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
   
   body {
-    background-color: #0a0a0a;
-    color: #eae6df;
-    font-family: 'Manrope', 'Inter', sans-serif;
+    background-color: #F8F5EF;
+    color: #6F6358;
+    font-family: 'Inter', sans-serif;
   }
   
   /* Premium scrollbar styling */
@@ -22,19 +22,19 @@
     width: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #0a0a0a;
+    background: #F8F5EF;
   }
   ::-webkit-scrollbar-thumb {
-    background: #1c1c1c;
+    background: #ECE4D7;
     border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #c5a880;
+    background: #B68A52;
   }
 
   ::selection {
-    background-color: #c5a880;
-    color: #121212;
+    background-color: #B68A52;
+    color: #F8F5EF;
   }
 }
 
@@ -51,11 +51,7 @@
   overflow: hidden;
 }
 
-.lenis.lenis-scrolling iframe {
-  pointer-events: none;
-}
-
-/* Subtle editorial noise effect */
+/* Subtle editorial noise effect - warm paper noise */
 .noise-overlay {
   position: fixed;
   top: 0;
@@ -63,49 +59,67 @@
   width: 100vw;
   height: 100vh;
   content: "";
-  opacity: 0.015;
+  opacity: 0.025;
   z-index: 9999;
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
-/* GPU-Accelerated Breathing Animation */
-@keyframes breathe {
+/* Cinematic Pinned Slide layout */
+.scene-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  will-change: opacity;
+  background-color: #F8F5EF;
+}
+
+/* Premium character reveal with translation, opacity and blur dissolve */
+.split-char {
+  display: inline-block;
+  transform: translate3d(0, 16px, 0);
+  filter: blur(8px);
+  opacity: 0;
+  will-change: transform, opacity, filter;
+  transition: none; /* controlled exclusively by GSAP */
+}
+
+/* Museum Glass effect */
+.museum-glass {
+  background: rgba(250, 248, 254, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(46, 36, 28, 0.08);
+}
+
+/* Luxury warm shadows */
+.warm-shadow {
+  box-shadow: 0 30px 80px rgba(132, 100, 70, 0.12);
+}
+
+.gold-glow {
+  text-shadow: 0 0 16px rgba(182, 138, 82, 0.12);
+}
+
+/* Subtle drifting slow light reflection animations */
+@keyframes ambientLightMove {
   0% {
-    transform: translate3d(0px, 0px, 0px) scale(1) rotate(0deg);
+    transform: translate3d(0px, 0px, 0px) scale(1);
   }
-  33% {
-    transform: translate3d(2px, -3px, 0px) scale(1.005) rotate(0.1deg);
-  }
-  66% {
-    transform: translate3d(-3px, 1px, 0px) scale(0.995) rotate(-0.15deg);
+  50% {
+    transform: translate3d(15px, -15px, 0px) scale(1.05);
   }
   100% {
-    transform: translate3d(1px, -1px, 0px) scale(1) rotate(0.05deg);
+    transform: translate3d(-10px, 10px, 0px) scale(1);
   }
 }
 
-.animate-breathing {
-  animation: breathe 12s ease-in-out infinite alternate;
+.animate-light {
+  animation: ambientLightMove 16s ease-in-out infinite alternate;
   will-change: transform;
 }
 
-/* Luxury visual styling classes */
-.gold-glow {
-  text-shadow: 0 0 12px rgba(197, 168, 128, 0.2);
-}
-
-.luxury-blur {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-.text-reveal-mask {
-  overflow: hidden;
-  position: relative;
-}
-
-/* Metallic shine/sweep effect */
+/* Horizontal metallic sweep effect for light typography shimmers */
 @keyframes metallicSweep {
   0% {
     background-position: -200% 0%;
@@ -118,14 +132,70 @@
 .metallic-text {
   background: linear-gradient(
     90deg,
-    #8c7861 0%,
-    #eae6df 25%,
-    #c5a880 50%,
-    #eae6df 75%,
-    #8c7861 100%
+    #6F6358 0%,
+    #2E241C 35%,
+    #B68A52 50%,
+    #2E241C 65%,
+    #6F6358 100%
   );
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: metallicSweep 6s linear infinite;
+  animation: metallicSweep 7s linear infinite;
+}
+
+/* Left-side scroll indicator style */
+.scroll-indicator-bar {
+  position: fixed;
+  left: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 180px;
+  background: rgba(46, 36, 28, 0.08);
+  z-index: 40;
+}
+
+.scroll-indicator-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  background: #B68A52;
+  transition: height 0.1s ease-out;
+}
+
+/* Rounded image corners */
+.luxury-image-frame {
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(132, 100, 70, 0.12);
+  border: 1px solid rgba(46, 36, 28, 0.06);
+}
+
+/* Pinned Hero CTA Glass Buttons */
+.hero-cta-btn {
+  height: 56px;
+  border-radius: 999px;
+  padding: 0 36px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 11px;
+  transition: all 0.4s ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.hero-cta-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: #C8A46A;
+  transform: scale(1.02);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }

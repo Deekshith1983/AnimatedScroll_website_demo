@@ -4,49 +4,49 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 
-// Navigation, Loader and Footer
+// Navigation, Loader and Utilities
 import { Navigation } from '../components/Navigation/Navigation';
 import { Loader } from '../components/Loader/Loader';
-import { Footer } from '../components/Footer/Footer';
+import { CustomCursor } from '../components/Common/CustomCursor';
+import { DustParticles } from '../components/Common/DustParticles';
 
-// Sections
-import { Hero } from '../sections/Hero';
+// Hybrid Showroom Elements
+import { HeroTimeline } from '../components/Hero/HeroTimeline';
 import { Welcome } from '../sections/Welcome';
-import { Experience } from '../sections/Experience';
-import { SignatureBasins } from '../sections/SignatureBasins';
-import { VanitySolutions } from '../sections/VanitySolutions';
-import { ComfortCraftsmanship } from '../sections/ComfortCraftsmanship';
-import { Collections } from '../sections/Collections';
-import { ShowerSystems } from '../sections/ShowerSystems';
+import { CollectionsGrid } from '../sections/CollectionsGrid';
 import { DesignedExperiences } from '../sections/DesignedExperiences';
 import { LuxuryCounters } from '../sections/LuxuryCounters';
-import { FinalCTA } from '../sections/FinalCTA';
+import { CTAWrapper } from '../sections/CTAWrapper';
+import { Footer } from '../components/Footer/Footer';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const IMAGES_TO_PRELOAD = [
-  '/assets/1.png',
-  '/assets/2.png',
-  '/assets/3.png',
-  '/assets/4.jpg',
-  '/assets/5.jpg',
-  '/assets/6.jpg',
-  '/assets/7.jpg',
-  '/assets/8.jpg',
+  '/assets/pc/1.png',
+  '/assets/pc/2.png',
+  '/assets/pc/3.png',
+  '/assets/pc/4.png',
+  '/assets/pc/5.png',
+  '/assets/mobile_tablet/1.png',
+  '/assets/mobile_tablet/2.png',
+  '/assets/mobile_tablet/3.jpg',
+  '/assets/mobile_tablet/4.jpg',
+  '/assets/mobile_tablet/5.jpg',
   '/logo/logo.jpg',
 ];
 
 export const App: React.FC = () => {
   const [progress, setProgress] = useState<number>(0);
+  const [scrollProgress, setScrollProgress] = useState<number>(0);
   const [isLoaderComplete, setIsLoaderComplete] = useState<boolean>(false);
   const lenisRef = useRef<Lenis | null>(null);
 
-  // Progressive image preloading logic
+  // Progressive preloading with Image.decode() for smooth layout initialization
   useEffect(() => {
     let loadedCount = 0;
     const total = IMAGES_TO_PRELOAD.length;
     const startTime = Date.now();
-    const minDuration = 2000; // Minimum 2s load time to appreciate the luxury reveal
+    const minDuration = 2200; // Easing in loader for luxury feel
 
     const updateProgress = () => {
       loadedCount++;
@@ -59,14 +59,16 @@ export const App: React.FC = () => {
         return new Promise<void>((resolve) => {
           const img = new Image();
           img.src = src;
-          img.onload = () => {
+          img.decode ? img.decode().then(() => {
             updateProgress();
             resolve();
-          };
-          img.onerror = () => {
+          }).catch(() => {
             updateProgress();
             resolve();
-          };
+          }) : (img.onload = () => {
+            updateProgress();
+            resolve();
+          });
         });
       });
 
@@ -76,7 +78,6 @@ export const App: React.FC = () => {
       const remaining = minDuration - elapsed;
 
       if (remaining > 0) {
-        // Smoothly animate the final stretch of loader
         let current = loadedCount ? Math.round((loadedCount / total) * 100) : 0;
         const interval = setInterval(() => {
           current += 2;
@@ -95,36 +96,33 @@ export const App: React.FC = () => {
     preloadAll();
   }, []);
 
-  // Initialize Lenis smooth scroll and integrate with GSAP ScrollTrigger
+  // Initialize Lenis scroll engine
   useEffect(() => {
     if (!isLoaderComplete) return;
 
     const lenis = new Lenis({
-      duration: 1.4,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // smooth easeOutExpo
+      duration: 1.5, // heavily damped scroll
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // easeOutExpo
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
-      wheelMultiplier: 0.9,
-      touchMultiplier: 1.2,
+      wheelMultiplier: 0.95,
+      touchMultiplier: 1.1,
     });
 
     lenisRef.current = lenis;
 
-    // Connect Lenis events to GSAP ScrollTrigger update loop
     const handleScroll = () => {
       ScrollTrigger.update();
     };
     lenis.on('scroll', handleScroll);
 
-    // Sync Lenis frame updates with GSAP ticker loop
     const updateTicker = (time: number) => {
       lenis.raf(time * 1000);
     };
     gsap.ticker.add(updateTicker);
     gsap.ticker.lagSmoothing(0);
 
-    // Make lenis instance globally accessible for navbar actions
     (window as any).lenis = lenis;
 
     return () => {
@@ -136,78 +134,100 @@ export const App: React.FC = () => {
     };
   }, [isLoaderComplete]);
 
-  // Smooth scroll handler to target elements
+  // Monitor scroll for champagne progress line update
+  useEffect(() => {
+    if (!isLoaderComplete) return;
+
+    const handleScrollProgress = () => {
+      const totalH = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalH <= 0) return;
+      const pct = (window.scrollY / totalH) * 100;
+      setScrollProgress(pct);
+    };
+
+    window.addEventListener('scroll', handleScrollProgress, { passive: true });
+    return () => window.removeEventListener('scroll', handleScrollProgress);
+  }, [isLoaderComplete]);
+
+  // Navigate directly to target slide positions on the timeline
   const handleLinkClick = (selector: string) => {
     const lenis = lenisRef.current || (window as any).lenis;
-    if (lenis) {
-      if (selector === '#hero') {
-        lenis.scrollTo(0, { duration: 1.8 });
-      } else {
-        lenis.scrollTo(selector, {
-          offset: 0,
-          duration: 1.8,
-        });
-      }
-    } else {
-      const el = document.querySelector(selector);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-      }
+    if (!lenis) return;
+
+    if (selector === '#hero') {
+      lenis.scrollTo(0, { duration: 2.2 });
+      return;
+    }
+
+    const targetEl = document.querySelector(selector);
+    if (targetEl) {
+      lenis.scrollTo(targetEl, {
+        duration: 2.2,
+        offset: -40, // slight offset for floating navigation navbar spacing
+        easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      });
     }
   };
 
   return (
     <HelmetProvider>
-      <div className="bg-[#0a0a0a] text-[#eae6df] min-h-screen relative selection:bg-[#c5a880] selection:text-charcoal overflow-x-hidden">
+      <div className="bg-ivory text-espresso min-h-screen relative selection:bg-bronze selection:text-ivory overflow-x-hidden">
         {/* SEO Metadata Setup */}
         <Helmet>
           <title>Om Mangalam — Premium Bathroom & Sanitaryware Showroom</title>
-          <meta name="description" content="Om Mangalam curates high-end luxury bathroom environments, designer basins, and premium ceramics. Visit our indiranagar showroom." />
+          <meta name="description" content="Om Mangalam curates high-end luxury bathroom environments, designer basins, and premium ceramics. Visit our Indiranagar showroom." />
           <meta name="keywords" content="Om Mangalam, luxury bathroom, sanitaryware, designer basins, luxury showroom, vanity systems, architecture" />
           <link rel="canonical" href="https://ommangalam.com" />
         </Helmet>
 
-        {/* Elegant noise overlay for tactile feel */}
+        {/* Ambient paper noise overlay for warm tactile feeling */}
         <div className="noise-overlay" />
 
-        {/* Preloader Screen */}
-        <Loader
-          progress={progress}
-          onComplete={() => setIsLoaderComplete(true)}
-        />
+        {/* Premium magnetic outline cursor */}
+        <CustomCursor />
 
-        {/* Main Orchestration once loader completes */}
+        {/* Floating dust particle canvas layer */}
+        <DustParticles />
+
+        {/* Vertical Left Side Champagne Scroll Progress Indicator */}
+        {isLoaderComplete && (
+          <div className="scroll-indicator-bar hidden md:block">
+            <div
+              className="scroll-indicator-progress"
+              style={{ height: `${scrollProgress}%` }}
+            />
+          </div>
+        )}
+
+        {/* Preloader Screen */}
+        <Loader progress={progress} onComplete={() => setIsLoaderComplete(true)} />
+
+        {/* Cinematic Layout Pinning */}
         {isLoaderComplete && (
           <>
-            {/* Header Sticky Navbar */}
+            {/* Floating Glass Rounded Navbar */}
             <Navigation onLinkClick={handleLinkClick} />
 
-            {/* Single Scroll Sections */}
-            <main className="relative z-10 w-full">
-              <Hero
-                onExploreClick={() => handleLinkClick('#about')}
-                onVisitClick={() => handleLinkClick('#contact')}
-              />
+            {/* Pinned Hero Story Section (Walkthrough scenes 1-7) */}
+            <div id="hero">
+              <HeroTimeline />
+            </div>
+
+            {/* Normal Scrolling Content Sections below Hero */}
+            <div className="relative w-full z-10 bg-ivory">
               <Welcome />
-              <Experience />
-              <SignatureBasins />
-              <VanitySolutions />
-              <ComfortCraftsmanship />
-              <Collections />
-              <ShowerSystems />
+              <CollectionsGrid />
               <DesignedExperiences />
               <LuxuryCounters />
-              <FinalCTA
-                onVisitClick={() => handleLinkClick('#contact')}
+              <CTAWrapper
+                onExploreClick={() => handleLinkClick('#collections')}
                 onContactClick={() => handleLinkClick('#contact')}
               />
-            </main>
-
-            {/* Premium Brand Footer */}
-            <Footer
-              onBackToTop={() => handleLinkClick('#hero')}
-              onLinkClick={handleLinkClick}
-            />
+              <Footer
+                onBackToTop={() => handleLinkClick('#hero')}
+                onLinkClick={handleLinkClick}
+              />
+            </div>
           </>
         )}
       </div>

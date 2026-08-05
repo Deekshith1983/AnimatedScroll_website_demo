@@ -1,111 +1,111 @@
 import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Award, Compass, Heart, MapPin } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
+interface ValueItem {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}
+
 export const DesignedExperiences: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const cardsRef = useRef<HTMLDivElement>(null);
+  const cardsContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const container = containerRef.current;
-    const cardsEl = cardsRef.current;
-    if (!container || !cardsEl) return;
-
-    const ctx = gsap.context(() => {
-      const cards = cardsEl.children;
-
-      // Staggered reveal of 4 luxury value cards
-      gsap.fromTo(
-        cards,
-        { opacity: 0, y: 40 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 1.2,
-          stagger: 0.18,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: cardsEl,
-            start: 'top 85%',
-          },
-        }
-      );
-    }, container);
-
-    return () => ctx.revert();
-  }, []);
-
-  const experiences = [
+  const values: ValueItem[] = [
     {
-      title: 'Curated Premium Collections',
-      desc: 'Internationally inspired bathroom solutions selected for timeless elegance.',
+      icon: <Award className="w-8 h-8 text-bronze" strokeWidth={1.5} />,
+      title: 'Curated Selections',
+      desc: 'We partner with leading global brands to bring you an exclusive catalog of designer basins, showers, and ceramics.',
     },
     {
-      title: 'Thoughtful Design',
-      desc: 'Beautiful spaces created through careful attention to detail and functionality.',
+      icon: <Compass className="w-8 h-8 text-bronze" strokeWidth={1.5} />,
+      title: 'Architectural Design',
+      desc: 'Our collections prioritize minimal profiles, refined geometry, and organic textures that frame luxury spaces.',
     },
     {
+      icon: <Heart className="w-8 h-8 text-bronze" strokeWidth={1.5} />,
       title: 'Expert Guidance',
-      desc: 'Supporting homeowners, architects, interior designers, and builders throughout every stage of their project.',
+      desc: 'Our consultants work side-by-side with architects, interior designers, and homeowners to customize material packages.',
     },
     {
-      title: 'Premium Showroom Experience',
-      desc: 'Walk through complete bathroom environments before making confident design decisions.',
+      icon: <MapPin className="w-8 h-8 text-bronze" strokeWidth={1.5} />,
+      title: 'Physical Showroom',
+      desc: 'Step into our Indiranagar gallery to touch, see, and interact with live, functional water and ceramic systems.',
     },
   ];
+
+  useEffect(() => {
+    const container = cardsContainerRef.current;
+    if (!container) return;
+
+    gsap.fromTo(
+      container.querySelectorAll('.value-card'),
+      { y: 30, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        stagger: 0.1,
+        duration: 0.7,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: container,
+          start: 'top 85%',
+          toggleActions: 'play none none none',
+        },
+      }
+    );
+  }, []);
 
   return (
     <section
       ref={containerRef}
-      className="relative bg-charcoal text-ivory py-28 md:py-40 px-6 md:px-16 overflow-hidden border-t border-[#c5a880]/10"
+      id="experience"
+      className="py-32 md:py-48 px-6 md:px-16 w-full bg-ivory text-espresso select-none"
     >
-      {/* Background glow accents */}
-      <div className="absolute top-[20%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-[#c5a880]/3 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[20%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-bronze/3 blur-[120px] pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto flex flex-col space-y-16 relative z-10">
-        {/* Central Section Title */}
-        <div className="max-w-3xl flex flex-col space-y-6">
-          <span className="text-[10px] md:text-xs tracking-[0.25em] text-[#c5a880] uppercase font-sans font-light">
-            08 / Value Pillars
-          </span>
-          <h2 className="text-3xl md:text-5xl font-serif font-light text-white tracking-wide uppercase leading-tight">
-            Designed Around <br /> Exceptional Experiences.
-          </h2>
-          <div className="w-16 h-[1px] bg-[#c5a880]/30" />
+      <div className="max-w-[1440px] mx-auto">
+        {/* Header grid */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-16 md:mb-24 gap-6">
+          <div className="flex flex-col space-y-4 max-w-xl">
+            <span className="text-[10px] md:text-xs tracking-luxury text-bronze uppercase font-sans font-light">
+              03 / Design Gallery
+            </span>
+            <h2 className="text-4xl md:text-5xl font-serif font-light text-espresso tracking-tight uppercase">
+              The Showroom Experience.
+            </h2>
+          </div>
+          <p className="text-sm md:text-base text-warmGrey font-sans font-light leading-relaxed max-w-[420px]">
+            We support architects and designers through bespoke procurement, strict quality assurance, and physical design demonstrations.
+          </p>
         </div>
 
-        {/* 4 Cards Grid */}
+        {/* 4-Card Grid */}
         <div
-          ref={cardsRef}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8"
+          ref={cardsContainerRef}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
         >
-          {experiences.map((exp, idx) => (
+          {values.map((item, idx) => (
             <div
-              key={exp.title}
-              className="group flex flex-col justify-between p-8 bg-[#0a0a0a] border border-[#c5a880]/5 hover:border-[#c5a880]/30 transition-all duration-500 rounded-none shadow-lg hover:-translate-y-2 relative"
+              key={idx}
+              className="value-card bg-limestone border border-luxuryBorder rounded-[28px] p-8 md:p-10 warm-shadow hover:-translate-y-1.5 transition-all duration-500 flex flex-col space-y-6 opacity-0"
             >
-              {/* Card numbering with golden tint */}
-              <div className="flex justify-between items-center mb-10">
-                <span className="font-serif text-[#c5a880] text-lg font-light tracking-wide">
-                  / 0{idx + 1}
-                </span>
-                <div className="w-1.5 h-1.5 bg-[#c5a880]/20 group-hover:bg-[#c5a880] transition-colors duration-500 rounded-full" />
+              {/* Icon wrap */}
+              <div className="w-14 h-14 rounded-full bg-ivory flex items-center justify-center border border-luxuryBorder">
+                {item.icon}
               </div>
 
-              <div>
-                <h3 className="text-lg md:text-xl font-serif font-light text-white uppercase tracking-wider mb-4 group-hover:text-[#c5a880] transition-colors leading-snug">
-                  {exp.title}
+              {/* Title & Description */}
+              <div className="flex flex-col space-y-3">
+                <h3 className="text-xl font-serif font-light text-espresso uppercase tracking-wide">
+                  {item.title}
                 </h3>
-                <p className="text-xs md:text-sm text-[#a1a1aa] font-sans font-light leading-relaxed">
-                  {exp.desc}
+                <p className="text-sm text-warmGrey font-sans font-light leading-relaxed">
+                  {item.desc}
                 </p>
               </div>
-
-              {/* Bottom detail slide line */}
-              <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[#c5a880] scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
             </div>
           ))}
         </div>

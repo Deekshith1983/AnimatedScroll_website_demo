@@ -1,97 +1,43 @@
-import React, { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import BreathingImage from '../components/Common/BreathingImage';
-
-gsap.registerPlugin(ScrollTrigger);
+import React from 'react';
+import SplitText from '../components/Common/SplitText';
 
 export const Experience: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const horizontalPanelRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    const horizontalPanel = horizontalPanelRef.current;
-    const content = contentRef.current;
-    if (!container || !horizontalPanel || !content) return;
-
-    const ctx = gsap.context(() => {
-      // Horizontal slide reveal of the panel container
-      gsap.fromTo(
-        horizontalPanel,
-        { clipPath: 'polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%)' },
-        {
-          clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
-          duration: 1.5,
-          ease: 'power3.inOut',
-          scrollTrigger: {
-            trigger: container,
-            start: 'top 75%',
-          },
-        }
-      );
-
-      // Text reveal inside panel
-      gsap.fromTo(
-        content.querySelectorAll('.animate-fade-up'),
-        { y: 30, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1.2,
-          stagger: 0.2,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: content,
-            start: 'top 80%',
-          },
-        }
-      );
-    }, container);
-
-    return () => ctx.revert();
-  }, []);
-
   return (
-    <section
-      id="experience"
-      ref={containerRef}
-      className="relative bg-charcoal text-ivory py-24 md:py-36 px-6 md:px-16 overflow-hidden border-t border-[#c5a880]/10"
-    >
-      <div className="max-w-7xl mx-auto flex flex-col space-y-12 md:space-y-16">
-        {/* Intro Tagline */}
-        <div ref={contentRef} className="flex flex-col space-y-4 max-w-2xl">
-          <span className="text-[10px] md:text-xs tracking-[0.25em] text-[#c5a880] uppercase font-sans font-light animate-fade-up">
-            02 / The Showroom Experience
-          </span>
-          <h2 className="text-3xl md:text-5xl font-serif font-light text-white tracking-wide uppercase animate-fade-up">
-            More Than Products. <br /> Complete Experiences.
-          </h2>
-          <p className="text-sm md:text-base text-[#a1a1aa] font-sans font-light leading-relaxed animate-fade-up">
-            Our showroom is designed to help you experience complete bathroom concepts instead of individual products. Every display is carefully composed to showcase how materials, textures, lighting, and craftsmanship work together.
-          </p>
-        </div>
-
-        {/* Large Horizontal Mask Reveal Panel */}
-        <div
-          ref={horizontalPanelRef}
-          className="relative w-full aspect-[16/9] max-h-[600px] border border-[#c5a880]/20 overflow-hidden shadow-2xl"
-          style={{ willChange: 'clip-path' }}
-        >
-          <BreathingImage
-            src="/assets/8.jpg"
-            alt="Om Mangalam Architectural Display Showroom"
-            parallaxSpeed={8}
-          />
-          {/* Subtle gold framing borders on corner edges */}
-          <div className="absolute top-0 left-0 w-8 h-8 border-t border-l border-[#c5a880]/30 pointer-events-none z-20" />
-          <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-[#c5a880]/30 pointer-events-none z-20" />
-          <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-[#c5a880]/30 pointer-events-none z-20" />
-          <div className="absolute bottom-0 right-0 w-8 h-8 border-b border-r border-[#c5a880]/30 pointer-events-none z-20" />
-        </div>
+    <div className="scene-container scene-7 absolute inset-0 w-full h-full opacity-0 pointer-events-none z-10 flex flex-col justify-end pb-24 md:pb-32 px-6 md:px-16 overflow-hidden">
+      {/* Background Image Layer */}
+      <div className="absolute inset-0 w-full h-full z-0">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-black/35 to-black/60 z-10" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_40%,#0a0a0a_100%)] z-10 opacity-70 scene-vignette" />
+        
+        <img
+          src="/assets/5.jpg"
+          alt="Bathroom Interior Sanctuary"
+          className="w-full h-full object-cover origin-center scale-100 filter brightness-50 scene-img will-change-transform"
+        />
       </div>
-    </section>
+
+      {/* Warm Ambient Radial Lighting Overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(197,168,128,0.07)_0%,transparent_50%)] z-20 pointer-events-none opacity-0 scene-light" />
+
+      {/* Foreground Content */}
+      <div className="max-w-4xl w-full mx-auto relative z-30 text-center flex flex-col items-center space-y-6">
+        <span className="text-[10px] md:text-xs tracking-[0.3em] text-[#c5a880] uppercase font-sans font-light scene-tag">
+          Scene 07 — Crafted Living
+        </span>
+        
+        <h2 className="text-4xl sm:text-6xl font-serif font-light text-white tracking-wide uppercase leading-tight">
+          <SplitText text="A bathroom is more than a room." mode="chars" />
+        </h2>
+        
+        <p className="text-xs sm:text-sm md:text-base text-[#a1a1aa] font-sans font-light leading-relaxed max-w-2xl scene-desc opacity-0">
+          It is a sanctuary where architecture, comfort, and craftsmanship come together. Every collection has been created to enrich everyday life through thoughtful design.
+        </p>
+
+        <span className="text-[10px] tracking-luxury text-[#c5a880] uppercase font-sans font-light pt-2 select-none scene-desc opacity-0">
+          Complete lifestyle.
+        </span>
+      </div>
+    </div>
   );
 };
 
