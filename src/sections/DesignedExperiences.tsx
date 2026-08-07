@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Award, Compass, Heart, MapPin } from 'lucide-react';
+import { Sparkles, Compass, ShieldCheck, Hammer } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -17,24 +17,24 @@ export const DesignedExperiences: React.FC = () => {
 
   const values: ValueItem[] = [
     {
-      icon: <Award className="w-8 h-8 text-bronze" strokeWidth={1.5} />,
-      title: 'Curated Selections',
-      desc: 'We partner with leading global brands to bring you an exclusive catalog of designer basins, showers, and ceramics.',
+      icon: <Hammer className="w-8 h-8 text-[#C8A46A]" strokeWidth={1.2} />,
+      title: 'Craftsmanship',
+      desc: 'Form and material worked by hand. We prioritize items made with meticulous attention to joint, weld, and curvature.',
     },
     {
-      icon: <Compass className="w-8 h-8 text-bronze" strokeWidth={1.5} />,
-      title: 'Architectural Design',
-      desc: 'Our collections prioritize minimal profiles, refined geometry, and organic textures that frame luxury spaces.',
+      icon: <ShieldCheck className="w-8 h-8 text-[#C8A46A]" strokeWidth={1.2} />,
+      title: 'Quality',
+      desc: 'Selected for structural durability. Our sanitaryware and fixtures feature non-corrosive finishes built to last.',
     },
     {
-      icon: <Heart className="w-8 h-8 text-bronze" strokeWidth={1.5} />,
-      title: 'Expert Guidance',
-      desc: 'Our consultants work side-by-side with architects, interior designers, and homeowners to customize material packages.',
+      icon: <Compass className="w-8 h-8 text-[#C8A46A]" strokeWidth={1.2} />,
+      title: 'Innovation',
+      desc: 'Smart, rimless, and ceiling-integrated water systems that elevate daily comfort through technology.',
     },
     {
-      icon: <MapPin className="w-8 h-8 text-bronze" strokeWidth={1.5} />,
-      title: 'Physical Showroom',
-      desc: 'Step into our Indiranagar gallery to touch, see, and interact with live, functional water and ceramic systems.',
+      icon: <Sparkles className="w-8 h-8 text-[#C8A46A]" strokeWidth={1.2} />,
+      title: 'Timeless Design',
+      desc: 'Restrained geometry and organic textures that integrate seamlessly into modern luxury architecture.',
     },
   ];
 
@@ -64,21 +64,21 @@ export const DesignedExperiences: React.FC = () => {
     <section
       ref={containerRef}
       id="experience"
-      className="py-32 md:py-48 px-6 md:px-16 w-full bg-ivory text-espresso select-none"
+      className="py-32 md:py-48 px-6 md:px-16 w-full bg-[#F2ECE3] text-[#2E241C] select-none"
     >
       <div className="max-w-[1440px] mx-auto">
         {/* Header grid */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-16 md:mb-24 gap-6">
           <div className="flex flex-col space-y-4 max-w-xl">
-            <span className="text-[10px] md:text-xs tracking-luxury text-bronze uppercase font-sans font-light">
-              03 / Design Gallery
+            <span className="text-[10px] md:text-xs tracking-luxury text-[#C8A46A] uppercase font-sans font-light">
+              05 / Why Om Mangalam
             </span>
-            <h2 className="text-4xl md:text-5xl font-serif font-light text-espresso tracking-tight uppercase">
-              The Showroom Experience.
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-light text-[#2E241C] tracking-tight uppercase">
+              Pillars of Excellence
             </h2>
           </div>
-          <p className="text-sm md:text-base text-warmGrey font-sans font-light leading-relaxed max-w-[420px]">
-            We support architects and designers through bespoke procurement, strict quality assurance, and physical design demonstrations.
+          <p className="text-base text-[#6F6358] font-sans font-light leading-relaxed max-w-[420px]">
+            We support architects, designers, and homeowners through bespoke procurement, rigorous quality checks, and timeless material curations.
           </p>
         </div>
 
@@ -90,19 +90,19 @@ export const DesignedExperiences: React.FC = () => {
           {values.map((item, idx) => (
             <div
               key={idx}
-              className="value-card bg-limestone border border-luxuryBorder rounded-[28px] p-8 md:p-10 warm-shadow hover:-translate-y-1.5 transition-all duration-500 flex flex-col space-y-6 opacity-0"
+              className="value-card bg-[#FAF8F4] border border-[#C8A46A]/10 rounded-[28px] p-8 md:p-10 shadow-sm hover:-translate-y-1.5 transition-all duration-500 flex flex-col space-y-6 opacity-0"
             >
               {/* Icon wrap */}
-              <div className="w-14 h-14 rounded-full bg-ivory flex items-center justify-center border border-luxuryBorder">
+              <div className="w-14 h-14 rounded-full bg-[#F8F5EF] flex items-center justify-center border border-[#C8A46A]/10">
                 {item.icon}
               </div>
 
               {/* Title & Description */}
               <div className="flex flex-col space-y-3">
-                <h3 className="text-xl font-serif font-light text-espresso uppercase tracking-wide">
+                <h3 className="text-xl font-serif font-light text-[#2E241C] uppercase tracking-wide">
                   {item.title}
                 </h3>
-                <p className="text-sm text-warmGrey font-sans font-light leading-relaxed">
+                <p className="text-sm text-[#6F6358] font-sans font-light leading-relaxed">
                   {item.desc}
                 </p>
               </div>

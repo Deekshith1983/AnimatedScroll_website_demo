@@ -4,132 +4,185 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-interface CategoryItem {
-  num: string;
+interface CollectionItem {
+  id: number;
+  tag: string;
   title: string;
   desc: string;
   img: string;
 }
 
-const CATEGORIES: CategoryItem[] = [
-  {
-    num: '01',
-    title: 'Minimal Basins',
-    desc: 'Pure geometry and fine ceramic rims designed as visual anchor points.',
-    img: '/assets/3.png',
-  },
-  {
-    num: '02',
-    title: 'Modern Vanities',
-    desc: 'Understated timber surfaces coupled with premium integrated stone basins.',
-    img: '/assets/4.jpg',
-  },
-  {
-    num: '03',
-    title: 'Precision Showers',
-    desc: 'Thermostatic control systems engineered for high performance water flow.',
-    img: '/assets/7.jpg',
-  },
-  {
-    num: '04',
-    title: 'Designer Ceramics',
-    desc: 'Handcrafted vessels finished in soft bronze, gold, and textured clay colors.',
-    img: '/assets/6.jpg',
-  },
-];
-
 export const CollectionsGrid: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const pinRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const grid = gridRef.current;
-    if (!grid) return;
+    const section = sectionRef.current;
+    const pin = pinRef.current;
+    const track = trackRef.current;
+    if (!section || !pin || !track) return;
 
-    // Fade up cards sequentially
-    gsap.fromTo(
-      grid.querySelectorAll('.category-card'),
-      { y: 40, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
-        stagger: 0.15,
-        duration: 0.8,
-        ease: 'power2.out',
+    const ctx = gsap.context(() => {
+      // Calculate scroll translation distance: track width minus window width
+      const getScrollAmount = () => {
+        return -(track.scrollWidth - window.innerWidth);
+      };
+
+      // Pinned Horizontal Translation Timeline
+      gsap.to(track, {
+        x: getScrollAmount,
+        ease: 'none',
         scrollTrigger: {
-          trigger: grid,
-          start: 'top 85%',
-          toggleActions: 'play none none none',
+          trigger: section,
+          start: 'top top',
+          end: 'bottom bottom',
+          pin: pin,
+          scrub: 1.2, // smooth scroll scrubbing
+          invalidateOnRefresh: true, // handles window resize
         },
-      }
-    );
+      });
+
+      // Staggered reveal for header titles on scroll
+      gsap.fromTo(
+        pin.querySelectorAll('.reveal-col-head'),
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          stagger: 0.15,
+          duration: 0.8,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: section,
+            start: 'top 80%',
+          },
+        }
+      );
+    });
+
+    return () => ctx.revert();
   }, []);
+
+  const collections: CollectionItem[] = [
+    {
+      id: 1,
+      tag: 'Collection 01 / Sculpted',
+      title: 'Designer Basins',
+      desc: 'Handcrafted countertop, pedestal, and semi-recessed washbasins designed to serve as functional sculptures.',
+      img: '/assets/3.jpg',
+    },
+    {
+      id: 2,
+      tag: 'Collection 02 / Suite',
+      title: 'Luxury Bathtubs',
+      desc: 'Free-standing tubs carved from natural stone and solid acrylic composites, forming architectural highlights.',
+      img: '/assets/2.jpg',
+    },
+    {
+      id: 3,
+      tag: 'Collection 03 / Sanitaryware',
+      title: 'Premium Commodes',
+      desc: 'Sleek wall-hung commodes featuring rimless technology, hidden installations, and satin ceramic textures.',
+      img: '/assets/6.jpg',
+    },
+    {
+      id: 4,
+      tag: 'Collection 04 / Hydrotherapy',
+      title: 'Shower Systems',
+      desc: 'Thermally balanced rain shower panels, body jets, and ceiling-integrated multi-flow systems.',
+      img: '/assets/7.jpg',
+    },
+    {
+      id: 5,
+      tag: 'Collection 05 / Furniture',
+      title: 'Custom Vanities',
+      desc: 'Minimalist vanities constructed from natural oak, walnut timber finishes, and marble countertops.',
+      img: '/assets/12.jpg',
+    },
+    {
+      id: 6,
+      tag: 'Collection 06 / Faucets',
+      title: 'Designer Brassware',
+      desc: 'Satin gold, chrome, and matte black single-lever mixers with custom anti-corrosive finishes.',
+      img: '/assets/15.jpg',
+    },
+    {
+      id: 7,
+      tag: 'Collection 07 / Fittings',
+      title: 'Luxury Accessories',
+      desc: 'Brushed metal towel rails, toilet paper holders, and matching soap dispensers to unify your bathroom design.',
+      img: '/assets/16.jpg',
+    },
+  ];
 
   return (
     <section
-      ref={containerRef}
+      ref={sectionRef}
       id="collections"
-      className="py-32 md:py-48 px-6 md:px-16 w-full bg-travertine text-espresso select-none"
+      className="relative w-full h-[300vh] bg-[#ECE4D7]"
     >
-      <div className="max-w-[1440px] mx-auto">
-        {/* Header spread */}
-        <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-16 md:mb-24 gap-6">
-          <div className="flex flex-col space-y-4 max-w-xl">
-            <span className="text-[10px] md:text-xs tracking-luxury text-bronze uppercase font-sans font-light">
-              02 / Collections
-            </span>
-            <h2 className="text-4xl md:text-5xl font-serif font-light text-espresso tracking-tight uppercase">
-              Curated Materials.
-            </h2>
-          </div>
-          <p className="text-sm md:text-base text-warmGrey font-sans font-light leading-relaxed max-w-[420px]">
-            Explore individual product collections crafted to enrich structural geometry and create calm, balanced spaces.
-          </p>
+      {/* Pinned viewport frame */}
+      <div
+        ref={pinRef}
+        className="w-full h-screen overflow-hidden flex flex-col justify-center bg-[#ECE4D7] relative"
+      >
+        {/* Header Block */}
+        <div className="absolute top-16 md:top-24 left-6 md:left-[8vw] z-20 flex flex-col">
+          <span className="reveal-col-head text-[10px] md:text-xs tracking-luxury text-[#C8A46A] uppercase font-sans font-light mb-2">
+            02 / Portfolio Showcase
+          </span>
+          <h2 className="reveal-col-head text-4xl sm:text-5xl md:text-6xl font-serif font-light text-[#2E241C] tracking-tight uppercase">
+            Curated Collections
+          </h2>
         </div>
 
-        {/* 4-Card Luxury Grid */}
-        <div
-          ref={gridRef}
-          className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12"
-        >
-          {CATEGORIES.map((cat, idx) => (
-            <div
-              key={idx}
-              className="category-card group bg-limestone rounded-[28px] overflow-hidden border border-luxuryBorder warm-shadow hover:-translate-y-1.5 transition-all duration-500 flex flex-col h-full cursor-pointer opacity-0"
-            >
-              {/* Image box */}
-              <div className="w-full aspect-[16/10] overflow-hidden relative">
+        {/* Horizontal Slider Track */}
+        <div className="w-full relative z-10 flex items-center h-full pt-[200px] pb-10">
+          <div
+            ref={trackRef}
+            className="flex gap-8 px-6 md:px-[8vw] w-max items-center"
+          >
+            {collections.map((item) => (
+              <div
+                key={item.id}
+                className="w-[300px] sm:w-[350px] md:w-[400px] h-[480px] md:h-[520px] rounded-[28px] overflow-hidden relative shadow-lg bg-[#FAF8F4] flex-shrink-0 group flex flex-col justify-end p-8 border border-[#C8A46A]/10 select-none cursor-pointer"
+              >
+                {/* Image layer (slow scale zoom on hover) */}
                 <img
-                  src={cat.img}
-                  alt={cat.title}
-                  className="w-full h-full object-cover filter brightness-[0.96] group-hover:scale-103 transition-transform duration-700"
-                  loading="lazy"
+                  src={item.img}
+                  alt={item.title}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1000ms] ease-out group-hover:scale-104 z-0 filter brightness-[0.94] group-hover:brightness-[0.92]"
                 />
-              </div>
 
-              {/* Text content */}
-              <div className="p-8 md:p-10 flex flex-col flex-grow justify-between gap-6">
-                <div className="flex flex-col space-y-3">
-                  <span className="text-xs font-sans font-light text-bronze">
-                    {cat.num} /
+                {/* Overlapping soft dark overlay gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent z-10 pointer-events-none" />
+
+                {/* Border soft illumination glow */}
+                <div className="absolute inset-0 border border-transparent group-hover:border-[#C8A46A] rounded-[28px] transition-all duration-500 z-20 pointer-events-none" />
+
+                {/* Card Content Overlay */}
+                <div className="relative z-30 flex flex-col items-start text-left">
+                  <span className="text-[10px] tracking-luxury text-[#C8A46A] uppercase font-sans font-light mb-2">
+                    {item.tag}
                   </span>
-                  <h3 className="text-2xl font-serif font-light text-espresso tracking-wide uppercase">
-                    {cat.title}
+                  
+                  <h3 className="text-2xl md:text-3xl font-serif font-light text-[#F8F5EF] mb-2 leading-tight">
+                    {item.title}
                   </h3>
-                  <p className="text-sm text-warmGrey font-sans font-light leading-relaxed">
-                    {cat.desc}
+                  
+                  <p className="text-xs md:text-sm text-[#F8F5EF]/80 font-sans font-light leading-relaxed mb-6 line-clamp-2">
+                    {item.desc}
                   </p>
-                </div>
-                
-                <div className="flex items-center gap-2 pt-2 text-[10px] tracking-luxury uppercase text-bronze group-hover:text-espresso transition-colors duration-300">
-                  <span>View Details</span>
-                  <span className="transform translate-x-0 group-hover:translate-x-1.5 transition-transform duration-300">
-                    &rarr;
+
+                  {/* Elegant sliding CTA */}
+                  <span className="text-[10px] tracking-luxury text-[#C8A46A] uppercase font-sans font-semibold flex items-center gap-1 translate-x-0 group-hover:translate-x-2 transition-transform duration-300 select-none">
+                    Explore Series <span className="font-serif">&rarr;</span>
                   </span>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

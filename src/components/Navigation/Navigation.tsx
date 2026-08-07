@@ -17,7 +17,9 @@ export const Navigation: React.FC<NavigationProps> = ({ onLinkClick }) => {
   // Monitor scroll height
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 30);
+      // Hero occupies 1400vh. Scroll past 14 viewports activates the scrolled glass header.
+      const heroThreshold = 14 * window.innerHeight;
+      setIsScrolled(window.scrollY > heroThreshold);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -83,12 +85,19 @@ export const Navigation: React.FC<NavigationProps> = ({ onLinkClick }) => {
 
   return (
     <>
-      {/* Floating Glass Rounded Navbar */}
-      <div className="fixed top-4 left-0 w-full z-50 flex justify-center px-4 md:px-8 pointer-events-none select-none">
+      {/* Floating Centered Architectural Navbar */}
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex justify-center pointer-events-none select-none w-[96%] md:w-[94%] lg:w-[92%] lg:max-w-[1600px] px-1">
         <nav
           className={cn(
-            'w-full max-w-[1280px] h-[72px] flex items-center justify-between px-6 md:px-10 rounded-full transition-all duration-500 pointer-events-auto shadow-sm border border-luxuryBorder bg-white/55 backdrop-blur-[20px]',
-            isScrolled && 'shadow-[0_12px_40px_rgba(132,100,70,0.06)] bg-white/80 border-luxuryBorder'
+            'w-full flex items-center justify-between transition-all duration-500 pointer-events-auto',
+            // Responsive Height
+            'h-[64px] md:h-[68px] lg:h-[72px]',
+            // Responsive Padding
+            'px-5 md:px-[32px] lg:px-[44px]',
+            // Styling crossover: Scrolled past Hero vs. Pinned inside Hero
+            isScrolled
+              ? 'rounded-full shadow-[0_12px_40px_rgba(132,100,70,0.06)] bg-white/80 border border-luxuryBorder backdrop-blur-[20px]'
+              : 'bg-transparent border-transparent shadow-none backdrop-blur-none'
           )}
         >
           {/* Logo & Brand Left */}
@@ -100,34 +109,46 @@ export const Navigation: React.FC<NavigationProps> = ({ onLinkClick }) => {
               handleNavClick('#hero');
             }}
           >
-            <div className="w-9 h-9 overflow-hidden border border-luxuryBorder rounded-full transition-transform duration-500 group-hover:scale-105">
+            <div className={cn(
+              "w-9 h-9 overflow-hidden rounded-full transition-transform duration-500 group-hover:scale-105 border",
+              isScrolled ? "border-luxuryBorder" : "border-[#F8F5EF]/20"
+            )}>
               <img
                 src="/logo/logo.jpg"
                 alt="Om Mangalam Logo"
                 className="w-full h-full object-cover"
               />
             </div>
-            <span className="text-base font-serif font-light tracking-[0.18em] text-espresso uppercase group-hover:text-bronze transition-colors">
+            <span className={cn(
+              "text-base font-serif font-light tracking-[0.18em] uppercase transition-colors duration-300",
+              isScrolled ? "text-espresso group-hover:text-bronze" : "text-[#F8F5EF] group-hover:text-[#C8A46A]"
+            )}>
               Om Mangalam
             </span>
           </a>
 
           {/* Centered Desktop Menu Links */}
           <div className="hidden lg:flex items-center space-x-12">
-            <ul className="flex space-x-8 text-xs tracking-luxury text-warmGrey font-sans font-light uppercase">
+            <ul className="flex space-x-8 text-xs tracking-luxury font-sans font-light uppercase">
               {navLinks.map((link) => (
                 <li key={link.id}>
                   <a
                     href={link.id}
-                    className="relative py-2 text-[11px] hover:text-espresso transition-colors group"
+                    className={cn(
+                      "relative py-2 text-[11px] transition-colors duration-300 group",
+                      isScrolled ? "text-warmGrey hover:text-espresso" : "text-[#F8F5EF]/70 hover:text-[#F8F5EF]"
+                    )}
                     onClick={(e) => {
                       e.preventDefault();
                       handleNavClick(link.id);
                     }}
                   >
                     {link.name}
-                    {/* Slide-in champagne bronze underline on hover */}
-                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-bronze origin-right scale-x-0 group-hover:scale-x-100 group-hover:origin-left transition-transform duration-400" />
+                    {/* Slide-in bronze/ivory underline on hover */}
+                    <span className={cn(
+                      "absolute bottom-0 left-0 w-full h-[1px] origin-right scale-x-0 group-hover:scale-x-100 group-hover:origin-left transition-transform duration-300",
+                      isScrolled ? "bg-bronze" : "bg-[#F8F5EF]"
+                    )} />
                   </a>
                 </li>
               ))}
@@ -138,7 +159,12 @@ export const Navigation: React.FC<NavigationProps> = ({ onLinkClick }) => {
           <div className="hidden lg:block">
             <button
               onClick={() => handleNavClick('#contact')}
-              className="px-6 py-2.5 border border-bronze text-[11px] tracking-luxury uppercase text-bronze hover:bg-bronze hover:text-white transition-all duration-500 font-sans font-medium rounded-full"
+              className={cn(
+                "px-6 py-2.5 text-[11px] tracking-luxury uppercase font-sans font-medium rounded-full transition-all duration-300 border",
+                isScrolled
+                  ? "border-bronze text-bronze hover:bg-bronze hover:text-white"
+                  : "border-[#F8F5EF]/25 text-[#F8F5EF] hover:bg-white/8 hover:border-[#C8A46A]"
+              )}
             >
               Visit Showroom
             </button>
@@ -152,14 +178,16 @@ export const Navigation: React.FC<NavigationProps> = ({ onLinkClick }) => {
           >
             <span
               className={cn(
-                'w-6 h-[1.5px] bg-espresso transition-transform duration-500 mb-1.5',
-                isOpen && 'transform rotate-45 translate-y-[3.5px]'
+                'w-6 h-[1.5px] transition-all duration-500 mb-1.5',
+                isOpen && 'transform rotate-45 translate-y-[3.5px]',
+                isScrolled ? 'bg-espresso' : 'bg-[#F8F5EF]'
               )}
             />
             <span
               className={cn(
-                'w-6 h-[1.5px] bg-espresso transition-transform duration-500',
-                isOpen && 'transform -rotate-45 -translate-y-[3.5px]'
+                'w-6 h-[1.5px] transition-all duration-500',
+                isOpen && 'transform -rotate-45 -translate-y-[3.5px]',
+                isScrolled ? 'bg-espresso' : 'bg-[#F8F5EF]'
               )}
             />
           </button>
@@ -214,7 +242,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onLinkClick }) => {
           <div className="menu-meta mt-auto border-t border-luxuryBorder pt-8 flex flex-col md:flex-row md:justify-between text-[10px] tracking-luxury uppercase text-warmGrey gap-4">
             <div>
               <p className="text-bronze mb-1 font-semibold">Gallery Address</p>
-              <p className="font-sans font-light text-espresso">Bengaluru Showroom, Indiranagar</p>
+              <p className="font-sans font-light text-espresso">Jaipur Showroom, Bais Godam</p>
             </div>
             <div>
               <p className="text-bronze mb-1 font-semibold">Socials</p>

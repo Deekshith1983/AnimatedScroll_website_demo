@@ -14,24 +14,23 @@ import { DustParticles } from '../components/Common/DustParticles';
 import { HeroTimeline } from '../components/Hero/HeroTimeline';
 import { Welcome } from '../sections/Welcome';
 import { CollectionsGrid } from '../sections/CollectionsGrid';
+import { MaterialShowcase } from '../sections/MaterialShowcase';
 import { DesignedExperiences } from '../sections/DesignedExperiences';
 import { LuxuryCounters } from '../sections/LuxuryCounters';
+import { GalleryShowcase } from '../sections/GalleryShowcase';
+import { Testimonials } from '../sections/Testimonials';
 import { CTAWrapper } from '../sections/CTAWrapper';
 import { Footer } from '../components/Footer/Footer';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const IMAGES_TO_PRELOAD = [
-  '/assets/pc/1.png',
-  '/assets/pc/2.png',
-  '/assets/pc/3.png',
-  '/assets/pc/4.png',
-  '/assets/pc/5.png',
-  '/assets/mobile_tablet/1.png',
-  '/assets/mobile_tablet/2.png',
-  '/assets/mobile_tablet/3.jpg',
-  '/assets/mobile_tablet/4.jpg',
-  '/assets/mobile_tablet/5.jpg',
+  '/assets/8.jpg',
+  '/assets/3.png',
+  '/assets/4.jpg',
+  '/assets/7.jpg',
+  '/assets/6.jpg',
+  '/assets/2.png',
   '/logo/logo.jpg',
 ];
 
@@ -175,7 +174,7 @@ export const App: React.FC = () => {
         {/* SEO Metadata Setup */}
         <Helmet>
           <title>Om Mangalam — Premium Bathroom & Sanitaryware Showroom</title>
-          <meta name="description" content="Om Mangalam curates high-end luxury bathroom environments, designer basins, and premium ceramics. Visit our Indiranagar showroom." />
+          <meta name="description" content="Om Mangalam curates high-end luxury bathroom environments, designer basins, and premium ceramics. Visit our Jaipur showroom." />
           <meta name="keywords" content="Om Mangalam, luxury bathroom, sanitaryware, designer basins, luxury showroom, vanity systems, architecture" />
           <link rel="canonical" href="https://ommangalam.com" />
         </Helmet>
@@ -214,13 +213,15 @@ export const App: React.FC = () => {
             </div>
 
             {/* Normal Scrolling Content Sections below Hero */}
-            <div className="relative w-full z-10 bg-ivory">
+            <div className="relative w-full z-10 bg-[#F8F5EF]">
               <Welcome />
               <CollectionsGrid />
+              <MaterialShowcase />
               <DesignedExperiences />
               <LuxuryCounters />
+              <GalleryShowcase />
+              <Testimonials />
               <CTAWrapper
-                onExploreClick={() => handleLinkClick('#collections')}
                 onContactClick={() => handleLinkClick('#contact')}
               />
               <Footer
