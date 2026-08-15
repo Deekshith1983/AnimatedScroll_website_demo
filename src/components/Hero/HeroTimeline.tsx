@@ -126,6 +126,11 @@ export const HeroTimeline: React.FC = () => {
     const updateFrame = () => {
       const targetTime = targetTimeRef.current;
 
+      // Force video to remain paused to prevent browser autoplay or linear playback conflicts
+      if (video && !video.paused) {
+        video.pause();
+      }
+
       // Only seek if video is ready, not currently seeking, and time has shifted
       if (video.readyState >= 2 && !video.seeking) {
         const diff = Math.abs(video.currentTime - targetTime);
