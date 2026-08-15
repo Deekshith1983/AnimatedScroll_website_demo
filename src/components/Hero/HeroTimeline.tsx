@@ -1,80 +1,151 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { HERO_SCENES, HERO_VIDEOS } from './heroConfig';
 
 gsap.registerPlugin(ScrollTrigger);
-
-interface SceneConfig {
-  key: number;
-  selector: string;
-  tag: string;
-  title: string;
-  desc: string;
-}
 
 export const HeroTimeline: React.FC = () => {
   const spacerRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isVideoReady, setIsVideoReady] = useState<boolean>(false);
 
-  // Monitor video loading status
+  const [videoSrc, setVideoSrc] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768
+        ? HERO_VIDEOS.mobile
+        : HERO_VIDEOS.desktop;
+    }
+    return HERO_VIDEOS.desktop;
+  });
+
+  const [isVideoReady, setIsVideoReady] = useState<boolean>(false);
+  const [isVideoLoaded, setIsVideoLoaded] = useState<boolean>(false);
+  const targetTimeRef = useRef<number>(0);
+  const normalizedProgressRef = useRef<number>(0);
+
+  // Handle source transition safely on viewport resize / crossing breakpoint
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+
+    const handleBreakpointChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      const isMobile = e.matches;
+      const targetSrc = isMobile
+        ? HERO_VIDEOS.mobile
+        : HERO_VIDEOS.desktop;
+
+      const video = videoRef.current;
+      if (video && videoSrc !== targetSrc) {
+        // 1. Pause previous video stream
+        video.pause();
+
+        // 2. Store normalized Hero progress
+        const duration = video.duration || 1;
+        const currentProgress = targetTimeRef.current / duration;
+        normalizedProgressRef.current = currentProgress;
+
+        // Reset readiness states to trigger fade transitions
+        setIsVideoReady(false);
+        setIsVideoLoaded(false);
+
+        // 3. Remove the previous source completely to prevent double download
+        video.removeAttribute('src');
+        video.load();
+
+        // 4. Load only the new appropriate source
+        setVideoSrc(targetSrc);
+      }
+    };
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleBreakpointChange);
+    } else {
+      mediaQuery.addListener(handleBreakpointChange);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleBreakpointChange);
+      } else {
+        mediaQuery.removeListener(handleBreakpointChange);
+      }
+    };
+  }, [videoSrc]);
+
+  // Monitor video loading and decodable playability status
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     const handleLoadedMetadata = () => {
       setIsVideoReady(true);
+      
+      // 5. Restore normalized Hero progress when metadata loads
+      if (normalizedProgressRef.current > 0) {
+        const duration = video.duration || 0;
+        const restoredTime = normalizedProgressRef.current * duration;
+        targetTimeRef.current = restoredTime;
+        normalizedProgressRef.current = 0; // reset
+      }
     };
 
-    if (video.readyState >= 1) {
+    const handleCanPlay = () => {
+      setIsVideoLoaded(true);
       setIsVideoReady(true);
+    };
+
+    // Metadata is loaded (duration is available)
+    if (video.readyState >= 1) {
+      handleLoadedMetadata();
     } else {
       video.addEventListener('loadedmetadata', handleLoadedMetadata);
     }
 
+    // Video is decodable and playable without stalling
+    if (video.readyState >= 3) {
+      setIsVideoLoaded(true);
+    } else {
+      video.addEventListener('canplay', handleCanPlay);
+    }
+
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('canplay', handleCanPlay);
     };
-  }, []);
+  }, [videoSrc]);
 
-  const scenes: SceneConfig[] = [
-    {
-      key: 1,
-      selector: '.h-scene-1',
-      tag: '01 / Entrance',
-      title: 'Where Luxury Finds Its Place',
-      desc: 'Spaces thoughtfully crafted to inspire extraordinary living.',
-    },
-    {
-      key: 2,
-      selector: '.h-scene-2',
-      tag: '02 / Suite',
-      title: 'Designed Around Timeless Living',
-      desc: 'Elegant collections that bring harmony, comfort, and sophistication into every home.',
-    },
-    {
-      key: 3,
-      selector: '.h-scene-3',
-      tag: '03 / Detail',
-      title: 'Crafted Beyond Expectations',
-      desc: 'Every curve, every finish, every detail reflects our commitment to exceptional craftsmanship.',
-    },
-    {
-      key: 4,
-      selector: '.h-scene-4',
-      tag: '04 / Collection',
-      title: 'Curated For Every Vision',
-      desc: 'A premium collection of basins, sanitaryware, vanities, and shower systems designed for modern architecture.',
-    },
-    {
-      key: 5,
-      selector: '.h-scene-5',
-      tag: '05 / Showroom',
-      title: 'Experience Om Mangalam',
-      desc: 'Where timeless design, enduring quality, and inspired living come together.',
-    },
-  ];
+  // Coalesced Seek Render Loop: requestAnimationFrame synchronization
+  useEffect(() => {
+    if (!isVideoReady) return;
+    const video = videoRef.current;
+    if (!video) return;
+
+    let rafId: number;
+    let lastSeekTime = -1;
+
+    const updateFrame = () => {
+      const targetTime = targetTimeRef.current;
+
+      // Only seek if video is ready, not currently seeking, and time has shifted
+      if (video.readyState >= 2 && !video.seeking) {
+        const diff = Math.abs(video.currentTime - targetTime);
+
+        // Coalesce seeks: seek only if scroll progression moves playhead > 15ms
+        if (diff > 0.015 && lastSeekTime !== targetTime) {
+          video.currentTime = targetTime;
+          lastSeekTime = targetTime;
+        }
+      }
+
+      rafId = requestAnimationFrame(updateFrame);
+    };
+
+    rafId = requestAnimationFrame(updateFrame);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+    };
+  }, [isVideoReady]);
 
   useEffect(() => {
     if (!isVideoReady) return;
@@ -129,9 +200,7 @@ export const HeroTimeline: React.FC = () => {
         ease: 'none',
         duration: 10.0, // timeline virtual duration units
         onUpdate: () => {
-          if (video && video.readyState >= 2) {
-            video.currentTime = videoProxy.currentTime;
-          }
+          targetTimeRef.current = videoProxy.currentTime;
         },
       }, 0);
 
@@ -141,7 +210,7 @@ export const HeroTimeline: React.FC = () => {
       // Fade out bottom scroll prompt early in the scroll sequence
       tl.to('.hero-scroll-prompt', { opacity: 0, duration: 0.8, ease: 'power2.out' }, 0.0);
 
-      scenes.forEach((scene, idx) => {
+      HERO_SCENES.forEach((scene, idx) => {
         const start = idx * chapDur;
 
         // A. Cross dissolve Entrance of the Scene container (except Scene 1)
@@ -155,7 +224,7 @@ export const HeroTimeline: React.FC = () => {
         }
 
         // B. Outgoing Cross dissolve Exit of the Scene container
-        if (idx < scenes.length - 1) {
+        if (idx < HERO_SCENES.length - 1) {
           tl.to(
             scene.selector,
             { opacity: 0, pointerEvents: 'none', duration: 0.2, ease: 'power2.inOut' },
@@ -193,7 +262,7 @@ export const HeroTimeline: React.FC = () => {
         }
 
         // D. Outgoing Text exits sequentially (Heading first, Description 150ms later)
-        if (idx < scenes.length - 1) {
+        if (idx < HERO_SCENES.length - 1) {
           // Heading exits first (at start + 1.8)
           tl.to(
             `${scene.selector} .scene-heading`,
@@ -237,23 +306,35 @@ export const HeroTimeline: React.FC = () => {
         ref={viewportRef}
         className="w-full h-screen overflow-hidden bg-black text-[#F8F5EF] relative showroom-viewport select-none"
       >
-        {/* HTML5 Video Element */}
+        {/* HTML5 Video Element with Seamless Poster Fade */}
         <div className="absolute inset-0 w-full h-full z-0 select-none pointer-events-none">
           {/* Subtle overlay gradient: Left rgba(0,0,0,0.35) -> transparent right */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-black/10 to-transparent z-10 pointer-events-none" />
           
+          {/* Video Stream (preloaded automatically, using optimized low-decoder seek format) */}
           <video
             ref={videoRef}
-            src="/assets/project1.mp4"
-            className="w-full h-full object-cover filter brightness-[0.95]"
+            src={videoSrc}
+            className={`w-full h-full object-cover filter brightness-[0.95] transition-opacity duration-700 ${
+              isVideoLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
             preload="auto"
             muted
             playsInline
           />
+
+          {/* Luxury loading poster extracted from the video first frame */}
+          <img
+            src="/assets/hero-poster.jpg"
+            alt="Showroom Entrance Poster"
+            className={`absolute inset-0 w-full h-full object-cover filter brightness-[0.95] transition-opacity duration-700 pointer-events-none ${
+              isVideoLoaded ? 'opacity-0' : 'opacity-100'
+            }`}
+          />
         </div>
 
         {/* Dynamic Alternating Text Position Wrapper */}
-        {scenes.map((scene) => (
+        {HERO_SCENES.map((scene) => (
           <div
             key={scene.key}
             className={`hero-scene ${scene.selector.substring(1)} absolute z-30 flex flex-col pointer-events-none w-full

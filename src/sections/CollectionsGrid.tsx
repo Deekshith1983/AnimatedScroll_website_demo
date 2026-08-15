@@ -153,6 +153,7 @@ export const CollectionsGrid: React.FC = () => {
                   src={item.img}
                   alt={item.title}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1000ms] ease-out group-hover:scale-104 z-0 filter brightness-[0.94] group-hover:brightness-[0.92]"
+                  loading="lazy"
                 />
 
                 {/* Overlapping soft dark overlay gradient */}

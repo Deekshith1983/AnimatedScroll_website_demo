@@ -25,8 +25,9 @@ import { Footer } from '../components/Footer/Footer';
 gsap.registerPlugin(ScrollTrigger);
 
 const IMAGES_TO_PRELOAD = [
-  '/assets/8.jpg',
-  '/assets/3.png',
+  '/assets/hero-poster.jpg',
+  '/assets/8.png',
+  '/assets/3.jpg',
   '/assets/4.jpg',
   '/assets/7.jpg',
   '/assets/6.jpg',
@@ -38,7 +39,32 @@ export const App: React.FC = () => {
   const [progress, setProgress] = useState<number>(0);
   const [scrollProgress, setScrollProgress] = useState<number>(0);
   const [isLoaderComplete, setIsLoaderComplete] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const lenisRef = useRef<Lenis | null>(null);
+
+  // Monitor breakpoint query for preload link priority matching
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    setIsMobile(mediaQuery.matches);
+
+    const handleMediaChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      setIsMobile(e.matches);
+    };
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleMediaChange);
+    } else {
+      mediaQuery.addListener(handleMediaChange);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleMediaChange);
+      } else {
+        mediaQuery.removeListener(handleMediaChange);
+      }
+    };
+  }, []);
 
   // Progressive preloading with Image.decode() for smooth layout initialization
   useEffect(() => {
@@ -177,6 +203,12 @@ export const App: React.FC = () => {
           <meta name="description" content="Om Mangalam curates high-end luxury bathroom environments, designer basins, and premium ceramics. Visit our Jaipur showroom." />
           <meta name="keywords" content="Om Mangalam, luxury bathroom, sanitaryware, designer basins, luxury showroom, vanity systems, architecture" />
           <link rel="canonical" href="https://ommangalam.com" />
+          {/* Preload only the viewport-appropriate Hero video as early as possible */}
+          {isMobile ? (
+            <link rel="preload" as="video" href="/assets/project1-scroll-mobile.mp4" type="video/mp4" />
+          ) : (
+            <link rel="preload" as="video" href="/assets/project1-scroll.mp4" type="video/mp4" />
+          )}
         </Helmet>
 
         {/* Ambient paper noise overlay for warm tactile feeling */}
