@@ -39,7 +39,12 @@ export const App: React.FC = () => {
   const [progress, setProgress] = useState<number>(0);
   const [scrollProgress, setScrollProgress] = useState<number>(0);
   const [isLoaderComplete, setIsLoaderComplete] = useState<boolean>(false);
-  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
   const lenisRef = useRef<Lenis | null>(null);
 
   // Monitor breakpoint query for preload link priority matching
