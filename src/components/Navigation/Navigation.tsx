@@ -14,12 +14,17 @@ export const Navigation: React.FC<NavigationProps> = ({ onLinkClick }) => {
   const linksRef = useRef<HTMLDivElement>(null);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
 
-  // Monitor scroll height
+  // Monitor scroll height — only update state when the boolean actually changes
   useEffect(() => {
+    let currentlyScrolled = false;
     const handleScroll = () => {
       // Hero occupies 1400vh. Scroll past 14 viewports activates the scrolled glass header.
       const heroThreshold = 14 * window.innerHeight;
-      setIsScrolled(window.scrollY > heroThreshold);
+      const nowScrolled = window.scrollY > heroThreshold;
+      // Early-exit guard: skip setState if value hasn't changed (avoids redundant re-renders)
+      if (nowScrolled === currentlyScrolled) return;
+      currentlyScrolled = nowScrolled;
+      setIsScrolled(nowScrolled);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);

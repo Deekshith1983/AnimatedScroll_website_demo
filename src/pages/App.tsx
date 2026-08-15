@@ -37,7 +37,7 @@ const IMAGES_TO_PRELOAD = [
 
 export const App: React.FC = () => {
   const [progress, setProgress] = useState<number>(0);
-  const [scrollProgress, setScrollProgress] = useState<number>(0);
+  const scrollBarRef = useRef<HTMLDivElement>(null);
   const [isLoaderComplete, setIsLoaderComplete] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -164,15 +164,21 @@ export const App: React.FC = () => {
     };
   }, [isLoaderComplete]);
 
-  // Monitor scroll for champagne progress line update
+  // Monitor scroll for champagne progress line — direct DOM update, no React re-render
   useEffect(() => {
     if (!isLoaderComplete) return;
+
+    const bar = scrollBarRef.current;
+    if (!bar) return;
+
+    // GSAP quickSetter writes height directly to the DOM element, bypassing React
+    const setBarHeight = gsap.quickSetter(bar, 'height', '%');
 
     const handleScrollProgress = () => {
       const totalH = document.documentElement.scrollHeight - window.innerHeight;
       if (totalH <= 0) return;
       const pct = (window.scrollY / totalH) * 100;
-      setScrollProgress(pct);
+      setBarHeight(pct);
     };
 
     window.addEventListener('scroll', handleScrollProgress, { passive: true });
@@ -229,8 +235,8 @@ export const App: React.FC = () => {
         {isLoaderComplete && (
           <div className="scroll-indicator-bar hidden md:block">
             <div
+              ref={scrollBarRef}
               className="scroll-indicator-progress"
-              style={{ height: `${scrollProgress}%` }}
             />
           </div>
         )}

@@ -115,40 +115,55 @@ export const HeroTimeline: React.FC = () => {
   }, [videoSrc]);
 
   // Coalesced Seek Render Loop: requestAnimationFrame synchronization
+  // Paused via IntersectionObserver when Hero is fully off-screen
   useEffect(() => {
     if (!isVideoReady) return;
     const video = videoRef.current;
-    if (!video) return;
+    const spacer = spacerRef.current;
+    if (!video || !spacer) return;
 
     let rafId: number;
     let lastSeekTime = -1;
+    let isVisible = true;
 
     const updateFrame = () => {
-      const targetTime = targetTimeRef.current;
+      if (isVisible) {
+        const targetTime = targetTimeRef.current;
 
-      // Force video to remain paused to prevent browser autoplay or linear playback conflicts
-      if (video && !video.paused) {
-        video.pause();
-      }
+        // Force video to remain paused to prevent browser autoplay or linear playback conflicts
+        if (video && !video.paused) {
+          video.pause();
+        }
 
-      // Only seek if video is ready, not currently seeking, and time has shifted
-      if (video.readyState >= 2 && !video.seeking) {
-        const diff = Math.abs(video.currentTime - targetTime);
+        // Only seek if video is ready, not currently seeking, and time has shifted
+        if (video.readyState >= 2 && !video.seeking) {
+          const diff = Math.abs(video.currentTime - targetTime);
 
-        // Coalesce seeks: seek only if scroll progression moves playhead > 15ms
-        if (diff > 0.015 && lastSeekTime !== targetTime) {
-          video.currentTime = targetTime;
-          lastSeekTime = targetTime;
+          // Coalesce seeks: seek only if scroll progression moves playhead > 15ms
+          if (diff > 0.015 && lastSeekTime !== targetTime) {
+            video.currentTime = targetTime;
+            lastSeekTime = targetTime;
+          }
         }
       }
 
       rafId = requestAnimationFrame(updateFrame);
     };
 
+    // IntersectionObserver: pause work when Hero spacer is fully off-screen
+    const observer = new IntersectionObserver(
+      (entries) => {
+        isVisible = entries[0].isIntersecting;
+      },
+      { threshold: 0 }
+    );
+    observer.observe(spacer);
+
     rafId = requestAnimationFrame(updateFrame);
 
     return () => {
       cancelAnimationFrame(rafId);
+      observer.disconnect();
     };
   }, [isVideoReady]);
 
