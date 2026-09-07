@@ -114,8 +114,9 @@ export const HeroTimeline: React.FC = () => {
     };
   }, [videoSrc]);
 
-  // Coalesced Seek Render Loop: requestAnimationFrame synchronization
-  // Paused via IntersectionObserver when Hero is fully off-screen
+  // Lerp-based Seek Loop: smoothly interpolates video.currentTime toward
+  // targetTimeRef.current every frame, producing cinematic braking on scroll stop.
+  // Paused via IntersectionObserver when Hero is fully off-screen.
   useEffect(() => {
     if (!isVideoReady) return;
     const video = videoRef.current;
@@ -123,34 +124,50 @@ export const HeroTimeline: React.FC = () => {
     if (!video || !spacer) return;
 
     let rafId: number;
-    let lastSeekTime = -1;
     let isVisible = true;
 
+    // ─── Tunable constants ────────────────────────────────────────────────────
+    // DAMPING: fraction of remaining gap closed each frame (at 60 fps).
+    //   Lower  → slower, more cinematic (e.g. 0.04 = very silky)
+    //   Higher → snappier, more responsive (e.g. 0.18 = quick settle)
+    const DAMPING = 0.08;
+
+    // SETTLE_THRESHOLD: distance (seconds) below which we consider "arrived"
+    // and stop seeking to avoid micro-jitter near the target.
+    const SETTLE_THRESHOLD = 0.004; // 4ms — imperceptible to viewer
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // smoothTime tracks the lerp position independently of video.currentTime
+    // (video.currentTime can lag due to decoder seek latency)
+    let smoothTime = 0;
+
     const updateFrame = () => {
-      if (isVisible) {
+      if (isVisible && video.readyState >= 2 && !video.seeking) {
+        // Keep video paused — we drive it exclusively via currentTime
+        if (!video.paused) video.pause();
+
         const targetTime = targetTimeRef.current;
+        const diff = targetTime - smoothTime;
 
-        // Force video to remain paused to prevent browser autoplay or linear playback conflicts
-        if (video && !video.paused) {
-          video.pause();
+        if (Math.abs(diff) > SETTLE_THRESHOLD) {
+          // Exponential lerp: close a fixed fraction of the remaining gap each frame
+          smoothTime += diff * DAMPING;
+          // Clamp to valid range [0, duration]
+          const duration = video.duration || 0;
+          smoothTime = Math.max(0, Math.min(smoothTime, duration));
+          video.currentTime = smoothTime;
+        } else if (Math.abs(video.currentTime - targetTime) > SETTLE_THRESHOLD) {
+          // Final snap to exact target once smoothTime has converged
+          smoothTime = targetTime;
+          video.currentTime = targetTime;
         }
-
-        // Only seek if video is ready, not currently seeking, and time has shifted
-        if (video.readyState >= 2 && !video.seeking) {
-          const diff = Math.abs(video.currentTime - targetTime);
-
-          // Coalesce seeks: seek only if scroll progression moves playhead > 15ms
-          if (diff > 0.015 && lastSeekTime !== targetTime) {
-            video.currentTime = targetTime;
-            lastSeekTime = targetTime;
-          }
-        }
+        // else: fully settled — no seek issued this frame (prevents micro-jitter)
       }
 
       rafId = requestAnimationFrame(updateFrame);
     };
 
-    // IntersectionObserver: pause work when Hero spacer is fully off-screen
+    // IntersectionObserver: pause work when Hero spacer leaves the viewport
     const observer = new IntersectionObserver(
       (entries) => {
         isVisible = entries[0].isIntersecting;
