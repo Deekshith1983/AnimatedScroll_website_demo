@@ -114,7 +114,27 @@ export const HeroTimeline: React.FC = () => {
     };
   }, [videoSrc]);
 
-  // Lerp-based Seek Loop: smoothly interpolates video.currentTime toward
+  // ── Bug 4 fix: iOS Safari suspends the video decoder during active touch scroll.
+  // Calling play()+pause() on first touchstart primes the decoder so Safari
+  // keeps it hot throughout the session. Runs once, then removes itself.
+  useEffect(() => {
+    if (!isVideoReady) return;
+    const video = videoRef.current;
+    if (!video) return;
+
+    let primed = false;
+    const primeVideoDecoder = () => {
+      if (primed) return;
+      primed = true;
+      video.play().then(() => video.pause()).catch(() => {/* ignore autoplay policy errors */});
+      window.removeEventListener('touchstart', primeVideoDecoder);
+    };
+    window.addEventListener('touchstart', primeVideoDecoder, { once: true, passive: true });
+
+    return () => window.removeEventListener('touchstart', primeVideoDecoder);
+  }, [isVideoReady]);
+
+  // ── Lerp-based Seek Loop: smoothly interpolates video.currentTime toward
   // targetTimeRef.current every frame, producing cinematic braking on scroll stop.
   // Paused via IntersectionObserver when Hero is fully off-screen.
   useEffect(() => {
@@ -132,36 +152,47 @@ export const HeroTimeline: React.FC = () => {
     //   Higher → snappier, more responsive (e.g. 0.18 = quick settle)
     const DAMPING = 0.08;
 
-    // SETTLE_THRESHOLD: distance (seconds) below which we consider "arrived"
-    // and stop seeking to avoid micro-jitter near the target.
-    const SETTLE_THRESHOLD = 0.004; // 4ms — imperceptible to viewer
+    // SETTLE_THRESHOLD: seconds below which we consider "arrived" and stop
+    // issuing seeks — prevents micro-jitter near the target.
+    const SETTLE_THRESHOLD = 0.004; // 4 ms, imperceptible to viewer
+
+    // SEEK_GATE: minimum delta (seconds) between consecutive currentTime writes.
+    // Browsers throttle seeks faster than the video's internal frame rate,
+    // causing micro-freeze → jump. 1/60 ≈ one video frame at 60 fps.
+    const SEEK_GATE = 1 / 60;
     // ─────────────────────────────────────────────────────────────────────────
 
-    // smoothTime tracks the lerp position independently of video.currentTime
-    // (video.currentTime can lag due to decoder seek latency)
+    // smoothTime is the lerp position — independent of video.currentTime
+    // (which can lag due to decoder seek latency).
     let smoothTime = 0;
 
     const updateFrame = () => {
-      if (isVisible && video.readyState >= 2 && !video.seeking) {
-        // Keep video paused — we drive it exclusively via currentTime
+      // ── Bug 3 fix: gate currentTime writes behind !video.seeking AND a
+      // minimum delta check so we never call faster than the decode rate.
+      if (isVisible && video.readyState >= 2) {
+        // Keep video paused — driven exclusively via currentTime
         if (!video.paused) video.pause();
 
         const targetTime = targetTimeRef.current;
         const diff = targetTime - smoothTime;
 
         if (Math.abs(diff) > SETTLE_THRESHOLD) {
-          // Exponential lerp: close a fixed fraction of the remaining gap each frame
+          // Advance the lerp every frame regardless of seeking state
           smoothTime += diff * DAMPING;
-          // Clamp to valid range [0, duration]
           const duration = video.duration || 0;
           smoothTime = Math.max(0, Math.min(smoothTime, duration));
-          video.currentTime = smoothTime;
-        } else if (Math.abs(video.currentTime - targetTime) > SETTLE_THRESHOLD) {
-          // Final snap to exact target once smoothTime has converged
+
+          // Only write to currentTime when decoder is free AND delta is large
+          // enough to justify a new seek (Bug 3 seek gate)
+          if (!video.seeking && Math.abs(smoothTime - video.currentTime) > SEEK_GATE) {
+            video.currentTime = smoothTime;
+          }
+        } else if (!video.seeking && Math.abs(video.currentTime - targetTime) > SETTLE_THRESHOLD) {
+          // Final precision snap once lerp has converged
           smoothTime = targetTime;
           video.currentTime = targetTime;
         }
-        // else: fully settled — no seek issued this frame (prevents micro-jitter)
+        // else: fully settled — zero seeks issued this frame
       }
 
       rafId = requestAnimationFrame(updateFrame);
@@ -169,9 +200,7 @@ export const HeroTimeline: React.FC = () => {
 
     // IntersectionObserver: pause work when Hero spacer leaves the viewport
     const observer = new IntersectionObserver(
-      (entries) => {
-        isVisible = entries[0].isIntersecting;
-      },
+      (entries) => { isVisible = entries[0].isIntersecting; },
       { threshold: 0 }
     );
     observer.observe(spacer);
@@ -220,14 +249,18 @@ export const HeroTimeline: React.FC = () => {
       const videoDuration = video.duration || 0;
 
       // 2. Master ScrollTrigger Timeline
-      // spacer is h-[1400vh] to reduce scrub speed by 50%
+      // spacer is h-[1400vh] to reduce scrub speed by 50%.
+      // ── Bug 2 fix: scrub changed from 3.5 → true (instant sync).
+      // The rAF lerp (DAMPING=0.08) is now the ONLY smoothing layer.
+      // scrub:3.5 was stacking ~3.5 s of GSAP lag on top of the ~1.2 s lerp
+      // lag, creating the "drag then snap" feel and desync with targetTimeRef.
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: spacer,
           start: 'top top',
           end: 'bottom bottom',
           pin: viewport,
-          scrub: 3.5, // heavier luxury scroll interpolation lag
+          scrub: true, // instant — lerp handles all smoothing
         },
       });
 
@@ -349,6 +382,7 @@ export const HeroTimeline: React.FC = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-black/35 via-black/10 to-transparent z-10 pointer-events-none" />
           
           {/* Video Stream (preloaded automatically, using optimized low-decoder seek format) */}
+          {/* Bug 4: webkit-playsinline + x5-playsinline keep decoder alive on iOS/Android WebView */}
           <video
             ref={videoRef}
             src={videoSrc}
@@ -358,6 +392,7 @@ export const HeroTimeline: React.FC = () => {
             preload="auto"
             muted
             playsInline
+            {...{ 'webkit-playsinline': 'true', 'x5-playsinline': 'true' } as any}
           />
 
           {/* Luxury loading poster extracted from the video first frame */}
